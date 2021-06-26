@@ -11,8 +11,11 @@ namespace cAlgo
     [Indicator(IsOverlay = false, TimeZone = TimeZones.UTC, AccessRights = AccessRights.None)]
     public class BitQSupportResistance : Indicator
     {
-        [Parameter(DefaultValue = 0.0)]
-        public double Parameter { get; set; }
+        [Parameter(DefaultValue = 2)]
+        public double minRS { get; set; }
+
+        [Parameter(DefaultValue = 10)]
+        public int minRSbar { get; set; }
 
         private BitQPeakTrough peakTrough;
         private int lastTroughIndex = 0;
@@ -34,13 +37,13 @@ namespace cAlgo
             peakTrough.Calculate(index);
             var peakData = peakTrough.getPeakData();
             var troughData = peakTrough.getTroughData();
-            if (peakData.Count % 300 == 0 )
+            if (peakData.Count % 300 == 0)
             {
                 findResistanceLine(peakData);
                 // flatten
             }
 
-            if(troughData.Count % 300 == 0)
+            if (troughData.Count % 300 == 0)
             {
                 findSupportLine(troughData);
             }
@@ -49,7 +52,6 @@ namespace cAlgo
 
         public void findResistanceLine(ArrayList peakData)
         {
-            var BASE_LEAST_RANGE = 10;
             var rangePeakData = peakData.GetRange(lastPeakIndex, 300);
             ArrayList listArray = new ArrayList();
             var index = 0;
@@ -66,9 +68,7 @@ namespace cAlgo
                 {
                     ArrayList arr = (ArrayList)listArray[k];
                     Utils.Base.Point firstPoint = (Utils.Base.Point)arr[0];
-                    if (Math.Abs(firstPoint.yValue - point.yValue) <= 2 && 
-                        Math.Abs(firstPoint.barIndex-point.barIndex) >= BASE_LEAST_RANGE &&
-                        !funcHelper.hasHigherPointAtRange(Math.Max(firstPoint.yValue, point.yValue), firstPoint.barIndex, point.barIndex, Bars))
+                    if (Math.Abs(firstPoint.yValue - point.yValue) <= minRS && Math.Abs(firstPoint.barIndex - point.barIndex) >= minRSbar && !funcHelper.hasHigherPointAtRange(Math.Max(firstPoint.yValue, point.yValue), firstPoint.barIndex, point.barIndex, Bars))
                     {
                         arr.Add(point);
                         listArray[k] = arr;
@@ -76,13 +76,14 @@ namespace cAlgo
                 }
                 index++;
             }
-            foreach(ArrayList arr in listArray)
+            foreach (ArrayList arr in listArray)
             {
-                if(arr.Count >= 3)
+                if (arr.Count >= 3)
                 {
                     Utils.Base.Point firstPoint = (Utils.Base.Point)arr[0];
                     Utils.Base.Point lastPoint = (Utils.Base.Point)arr[arr.Count - 1];
-                    Chart.DrawRectangle("aaa_" + firstPoint.barIndex + "_" + lastPoint.barIndex, firstPoint.barIndex, firstPoint.yValue, lastPoint.barIndex, lastPoint.yValue, Color.White); ;
+                    ChartRectangle rectangle = Chart.DrawRectangle("aaa_" + firstPoint.barIndex + "_" + lastPoint.barIndex, firstPoint.barIndex, firstPoint.yValue, lastPoint.barIndex, lastPoint.yValue, Color.FromHex("#66FFFFFF"));
+                    rectangle.IsFilled = true;
                 }
             }
             lastPeakIndex = peakData.Count;
@@ -90,7 +91,6 @@ namespace cAlgo
 
         public void findSupportLine(ArrayList troughData)
         {
-            var BASE_LEAST_RANGE = 10;
             var rangePeakData = troughData.GetRange(lastTroughIndex, 300);
             ArrayList listArray = new ArrayList();
             var index = 0;
@@ -107,9 +107,7 @@ namespace cAlgo
                 {
                     ArrayList arr = (ArrayList)listArray[k];
                     Utils.Base.Point firstPoint = (Utils.Base.Point)arr[0];
-                    if (Math.Abs(firstPoint.yValue - point.yValue) <= 2 &&
-                        Math.Abs(firstPoint.barIndex - point.barIndex) >= BASE_LEAST_RANGE &&
-                        !funcHelper.hasLowerPointAtRange(Math.Max(firstPoint.yValue, point.yValue), firstPoint.barIndex, point.barIndex, Bars))
+                    if (Math.Abs(firstPoint.yValue - point.yValue) <= minRS && Math.Abs(firstPoint.barIndex - point.barIndex) >= minRSbar && !funcHelper.hasLowerPointAtRange(Math.Min(firstPoint.yValue, point.yValue), firstPoint.barIndex, point.barIndex, Bars))
                     {
                         arr.Add(point);
                         listArray[k] = arr;
@@ -123,7 +121,8 @@ namespace cAlgo
                 {
                     Utils.Base.Point firstPoint = (Utils.Base.Point)arr[0];
                     Utils.Base.Point lastPoint = (Utils.Base.Point)arr[arr.Count - 1];
-                    Chart.DrawRectangle("aaa_" + firstPoint.barIndex + "_" + lastPoint.barIndex, firstPoint.barIndex, firstPoint.yValue, lastPoint.barIndex, lastPoint.yValue, Color.Green) ;
+                    ChartRectangle rectangle = Chart.DrawRectangle("aaa_" + firstPoint.barIndex + "_" + lastPoint.barIndex, firstPoint.barIndex, firstPoint.yValue, lastPoint.barIndex, lastPoint.yValue, Color.FromHex("#664BCA0C"));
+                    rectangle.IsFilled = true;
                 }
             }
             lastTroughIndex = troughData.Count;
