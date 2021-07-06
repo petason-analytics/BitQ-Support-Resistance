@@ -1,6 +1,6 @@
 .idea/
 .vs/
-PeakTroughtFinder/bin/
-PeakTroughtFinder/obj/
+*/bin/
+*/obj/
 .TMP
 *.TMP
