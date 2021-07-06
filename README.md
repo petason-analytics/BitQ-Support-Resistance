@@ -3,6 +3,7 @@
 7/1/2021: Calculate Resistance and Support separately.
 7/3/2021: Try to calculate line that can be RS, SP with mix data peak, trough. But it creates too many lines.
 7/3/2021: Add condition that needs to be a RS, SP at first 2 point to consider a valid lines --> OK.
+7/6/2021: Sửa theo Utils mới. Vẫn phải dùng import .dll đối với indicator khác nếu ko sẽ gặp lỗi có 2 hoặc nhiều hơn indicator trên cùng 1 project và ko build được.
 
 
 
